@@ -25,10 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        fsmeditor.cpp
+        fsmeditor.cpp \
+    fsmgraphicsscene.cpp \
+    fsmstategraphicsitem.cpp
 
 HEADERS += \
-        fsmeditor.h
+        fsmeditor.h \
+    fsmgraphicsscene.h \
+    fsmstategraphicsitem.h
 
 FORMS += \
         fsmeditor.ui
