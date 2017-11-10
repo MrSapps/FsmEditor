@@ -9,6 +9,7 @@
 #include <QUndoStack>
 #include <QUndoView>
 #include <QDockWidget>
+#include <QListWidget>
 
 /*
 TODO:
@@ -184,6 +185,8 @@ public:
       : QGraphicsScene(pParent), mUndoStack(undoStack)
     {
         connect(this, SIGNAL(selectionChanged()), this, SLOT(SelectionChanged()));
+
+        setSceneRect(0, 0, 700, 700);
     }
 
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* pEvent) override
@@ -220,27 +223,44 @@ private:
     QUndoStack& mUndoStack;
 };
 
-FsmEditor::FsmEditor(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::FsmEditor)
+FsmEditor::FsmEditor(QWidget* parent)
+  : QMainWindow(parent), mUi(new Ui::FsmEditor)
 {
-    ui->setupUi(this);
+    mUi->setupUi(this);
 
     QGraphicsView* graphicsView = new QGraphicsView(this);
     graphicsView->setScene(new FsmGraphicsScene(graphicsView, mUndoStack));
     setCentralWidget(graphicsView);
 
-    QDockWidget* dock = new QDockWidget(tr("Edit history"), this);
-    dock->setFeatures(QDockWidget::DockWidgetMovable);
+    {
+        QDockWidget* dock = new QDockWidget(tr("Property editor"), this);
+        dock->setFeatures(QDockWidget::DockWidgetMovable);
 
-    QUndoView* undoView = new QUndoView(this);
-    undoView->setStack(&mUndoStack);
+        QListWidget* listWidget = new QListWidget(this);
+        listWidget->addItem("Property test");
 
-    dock->setWidget(undoView);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
+        dock->setWidget(listWidget);
+        addDockWidget(Qt::RightDockWidgetArea, dock);
+    }
+
+    {
+        QDockWidget* dock = new QDockWidget(tr("Edit history"), this);
+        dock->setFeatures(QDockWidget::DockWidgetMovable);
+
+        QUndoView* undoView = new QUndoView(this);
+        undoView->setStack(&mUndoStack);
+
+        dock->setWidget(undoView);
+        addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    }
+
+    statusBar()->showMessage(tr("Ready"));
+
+    setContextMenuPolicy(Qt::NoContextMenu);
 }
 
 FsmEditor::~FsmEditor()
 {
-    delete ui;
+    delete mUi;
 }

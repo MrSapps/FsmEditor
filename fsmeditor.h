@@ -4,20 +4,19 @@
 #include <QMainWindow>
 #include <QUndoStack>
 
-namespace Ui {
-class FsmEditor;
+namespace Ui
+{
+    class FsmEditor;
 }
 
 class FsmEditor : public QMainWindow
 {
     Q_OBJECT
-
 public:
-    explicit FsmEditor(QWidget *parent = 0);
+    explicit FsmEditor(QWidget* parent = nullptr);
     ~FsmEditor();
-
 private:
-    Ui::FsmEditor *ui;
+    Ui::FsmEditor* mUi;
     QUndoStack mUndoStack;
 };
 
