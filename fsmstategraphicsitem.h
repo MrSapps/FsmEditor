@@ -4,7 +4,7 @@
 #include <QGraphicsItem>
 #include <QSet>
 
-class FsmGraphicsConnection;
+class FsmConnectionGraphicsItem;
 
 constexpr int kRectSize = 200 / 2;
 
@@ -46,21 +46,24 @@ public:
         }
     }
 
-    void ChangeInConnection(bool add, FsmGraphicsConnection* pConnection)
+    void ChangeInConnection(bool add, FsmConnectionGraphicsItem* pConnection)
     {
         ChangeConnectionT(add, mInboundConnections, pConnection);
     }
 
-    void ChangeOutConnection(bool add, FsmGraphicsConnection* pConnection)
+    void ChangeOutConnection(bool add, FsmConnectionGraphicsItem* pConnection)
     {
         ChangeConnectionT(add, mOutboundConnections, pConnection);
     }
 
+    void SetName(QString name) { mName = name; }
+    const QString& Name() const { return mName; }
 private:
     QRect mRect;
-    QString mName = "A fan art zzzzzza zzzz zza zzza zzzzzzzz zzazzz zzzz zzgzz zzz zzzzzz zzhgfzz zzzzzzz zzzzz zzzzz Bzzz";
-    QSet<FsmGraphicsConnection*> mInboundConnections;
-    QSet<FsmGraphicsConnection*> mOutboundConnections;
+    QString mName;
+    QSet<FsmConnectionGraphicsItem*> mInboundConnections;
+    QSet<FsmConnectionGraphicsItem*> mOutboundConnections;
+    static unsigned int mInstaceCounter;
 };
 
 #endif // FSMSTATEGRAPHICSITEM_H

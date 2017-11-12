@@ -4,9 +4,11 @@
 #include <QGraphicsScene>
 #include <QUndoStack>
 
+class FsmConnectionGraphicsItem;
+
 class FsmGraphicsScene : public QGraphicsScene
 {
-    Q_OBJECT
+    //Q_OBJECT
 public:
     FsmGraphicsScene(QObject* pParent, QUndoStack& undoStack);
 
@@ -18,11 +20,12 @@ public:
 
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* pMouseEvent) override;
 
-public slots:
-    void SelectionChanged();
+//public slots:
+    //void SelectionChanged();
 
 private:
     QUndoStack& mUndoStack;
+    FsmConnectionGraphicsItem* mInProgressConnection = nullptr;
 };
 
 #endif // FSMGRAPHICSSCENE_H

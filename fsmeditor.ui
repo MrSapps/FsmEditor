@@ -34,6 +34,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -97,6 +98,11 @@
   <action name="actionSet_scene_size">
    <property name="text">
     <string>Set scene size</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>

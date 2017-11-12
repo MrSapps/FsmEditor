@@ -1,5 +1,8 @@
 #include "fsmstategraphicsitem.h"
 #include <QPainter>
+#include "fsmconnectiongraphicsitem.h"
+
+/*static*/ unsigned int FsmStateGraphicsItem::mInstaceCounter;
 
 FsmStateGraphicsItem::FsmStateGraphicsItem(QGraphicsItem *pParent)
     : QGraphicsItem(pParent)
@@ -12,6 +15,9 @@ FsmStateGraphicsItem::FsmStateGraphicsItem(QGraphicsItem *pParent)
     mRect.setY(-kRectSize);
     mRect.setWidth(kRectSize);
     mRect.setHeight(kRectSize);
+
+    mInstaceCounter++;
+    mName = "New state(" + QString::number(mInstaceCounter) + ")";
 }
 
 int FsmStateGraphicsItem::type() const
@@ -23,20 +29,20 @@ QVariant FsmStateGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange chan
 {
     if (change == QGraphicsItem::ItemPositionChange || change == QGraphicsItem::ItemPositionHasChanged)
     {
-        foreach (FsmGraphicsConnection* connection, mInboundConnections)
+        foreach (FsmConnectionGraphicsItem* connection, mInboundConnections)
         {
-            //connection->UpdatePosition();
+            connection->SyncPosition();
         }
 
-        foreach (FsmGraphicsConnection* connection, mOutboundConnections)
+        foreach (FsmConnectionGraphicsItem* connection, mOutboundConnections)
         {
-            //connection->UpdatePosition();
+            connection->SyncPosition();
         }
     }
     return value;
 }
 
-void FsmStateGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void FsmStateGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/)
 {
     painter->setBrush(QColor(255, 255, 255));
     if (isSelected())
