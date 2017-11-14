@@ -176,3 +176,31 @@ QVariant FsmConnectionGraphicsItem::itemChange(GraphicsItemChange change, const 
     }
     return value;
 }
+
+FsmConnectionSplitter::FsmConnectionSplitter(QGraphicsItem* pParent)
+ : QGraphicsItem(pParent)
+{
+    setFlag(QGraphicsItem::ItemIsMovable, true);
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+}
+
+void FsmConnectionSplitter::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->setBrush(QColor(255, 255, 255));
+    if (isSelected())
+    {
+        painter->setPen(QColor(255, 0, 0));
+    }
+    else
+    {
+        painter->setPen(QColor(0, 0, 0));
+    }
+    painter->drawEllipse(this->boundingRect());
+}
+
+QRectF FsmConnectionSplitter::boundingRect() const
+{
+    QRectF rectangle(-(mRadius / 2),-(mRadius / 2), mRadius / 2, mRadius / 2);
+    return rectangle.adjusted(2, 2, 2, 2);
+}

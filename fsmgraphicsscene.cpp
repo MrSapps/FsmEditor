@@ -4,6 +4,7 @@
 #include <QUndoCommand>
 #include <QGraphicsSceneMouseEvent>
 #include "fsmconnectiongraphicsitem.h"
+#include <QDebug>
 
 class AddStateCommand : public QUndoCommand
 {
@@ -73,9 +74,29 @@ FsmGraphicsScene::FsmGraphicsScene(QObject *pParent, QUndoStack &undoStack)
     setSceneRect(0, 0, 700, 700);
 }
 
-void FsmGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *pEvent)
+void FsmGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* pEvent)
 {
-    mUndoStack.push(new AddStateCommand(this, pEvent->scenePos()));
+    if (pEvent->button() == Qt::LeftButton)
+    {
+        mUndoStack.push(new AddStateCommand(this, pEvent->scenePos()));
+    }
+}
+
+void FsmGraphicsScene::SplitLine(FsmConnectionGraphicsItem* pSplitMe, QPointF splitPos)
+{
+    FsmConnectionSplitter* pSplitter = new FsmConnectionSplitter();
+    pSplitter->setPos(splitPos);
+    addItem(pSplitter);
+
+    pSplitMe->DestinationItem()->ChangeInConnection(false, pSplitMe);
+    //pSplitMe->SetDestinationItem(pSplitter);
+
+    qDebug() << "GO";
+
+
+    //pSplitMe->SyncPosition();
+
+    //FsmConnectionGraphicsItem* newLine = new FsmConnectionGraphicsItem()
 }
 
 void FsmGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* pMouseEvent)
@@ -88,6 +109,11 @@ void FsmGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* pMouseEvent)
             mInProgressConnection = new FsmConnectionGraphicsItem(QSharedPointer<FsmConnectionData>(new FsmConnectionData()));
             mInProgressConnection->setLine(QLineF(pMouseEvent->scenePos(), pMouseEvent->scenePos()));
             addItem(mInProgressConnection);
+        }
+        else if (pItemUnderMouse && pItemUnderMouse->type() == FsmConnectionGraphicsItem::Type)
+        {
+            FsmConnectionGraphicsItem* pConnection = qgraphicsitem_cast<FsmConnectionGraphicsItem*>(pItemUnderMouse);
+            SplitLine(pConnection, pMouseEvent->scenePos());
         }
     }
     else if (pMouseEvent->button() != Qt::LeftButton)
