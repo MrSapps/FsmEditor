@@ -27,18 +27,7 @@ int FsmStateGraphicsItem::type() const
 
 QVariant FsmStateGraphicsItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
-    if (change == QGraphicsItem::ItemPositionChange || change == QGraphicsItem::ItemPositionHasChanged)
-    {
-        foreach (FsmConnectionGraphicsItem* connection, mInboundConnections)
-        {
-            connection->SyncPosition();
-        }
-
-        foreach (FsmConnectionGraphicsItem* connection, mOutboundConnections)
-        {
-            connection->SyncPosition();
-        }
-    }
+    HandleItemChange(change);
     return value;
 }
 

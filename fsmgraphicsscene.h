@@ -24,7 +24,7 @@ public:
     //void SelectionChanged();
 
 private:
-    void SplitLine(FsmConnectionGraphicsItem* pSplitMe, QPointF splitPos);
+    void SplitLine(FsmConnectionGraphicsItem* pLineToSplit, QPointF splitPos);
 
     QUndoStack& mUndoStack;
     FsmConnectionGraphicsItem* mInProgressConnection = nullptr;

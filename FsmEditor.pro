@@ -29,14 +29,16 @@ SOURCES += \
     fsmgraphicsscene.cpp \
     fsmstategraphicsitem.cpp \
     fsmconnectiongraphicsitem.cpp \
-    propertytreewidget.cpp
+    propertytreewidget.cpp \
+    iconnectableitem.cpp
 
 HEADERS += \
         fsmeditor.h \
     fsmgraphicsscene.h \
     fsmstategraphicsitem.h \
     fsmconnectiongraphicsitem.h \
-    propertytreewidget.h
+    propertytreewidget.h \
+    iconnectableitem.h
 
 FORMS += \
         fsmeditor.ui

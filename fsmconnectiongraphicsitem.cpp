@@ -8,7 +8,7 @@ const qreal Pi = 3.14;
 const int kLineWidth = 4;
 const int kArrowSize = 20;
 
-FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(FsmStateGraphicsItem* sourceItem, FsmStateGraphicsItem* destinationItem, QGraphicsItem* parent)
+FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(IConnectableItem *sourceItem, IConnectableItem *destinationItem, QGraphicsItem* parent)
     : QGraphicsLineItem(parent), mDestinationItem(destinationItem), mSourceItem(sourceItem)
 {
     mConnectionData = QSharedPointer<FsmConnectionData>(new FsmConnectionData());
@@ -17,8 +17,10 @@ FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(FsmStateGraphicsItem* sourc
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setPen(QPen(QColor(0,0,0), kLineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
-    mSourceItem->ChangeOutConnection(true, this);
-    mDestinationItem->ChangeInConnection(true, this);
+
+
+    mSourceItem->OutConnections().insert(this);
+    mDestinationItem->InConnections().insert(this);
 }
 
 FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(QSharedPointer<FsmConnectionData> connectionData, QGraphicsItem *parent)
@@ -64,7 +66,7 @@ QPainterPath FsmConnectionGraphicsItem::shape() const
 
 void FsmConnectionGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    if (mSourceItem && mSourceItem->collidesWithItem(mDestinationItem))
+    if (mSourceItem && mSourceItem->AsGraphicsItem()->collidesWithItem(mDestinationItem->AsGraphicsItem()))
     {
         return;
     }
@@ -121,13 +123,13 @@ QPointF FsmConnectionGraphicsItem::WhereLineMeetsRect(const QLineF& polyLine, QG
 void FsmConnectionGraphicsItem::SyncPosition()
 {
     // Line from the middle of each item
-    QLineF polyLine(mapFromItem(mDestinationItem, mDestinationItem->boundingRect().center()), mapFromItem(mSourceItem, mSourceItem->boundingRect().center()));
+    QLineF polyLine(mapFromItem(mDestinationItem->AsGraphicsItem(), mDestinationItem->AsGraphicsItem()->boundingRect().center()), mapFromItem(mSourceItem->AsGraphicsItem(), mSourceItem->AsGraphicsItem()->boundingRect().center()));
 
     // Find where the line hits the edge of to item
-    QPointF toItemIntersectionPoint = WhereLineMeetsRect(polyLine, mDestinationItem, mDestinationItem->boundingRect());
+    QPointF toItemIntersectionPoint = WhereLineMeetsRect(polyLine, mDestinationItem->AsGraphicsItem(), mDestinationItem->AsGraphicsItem()->boundingRect());
 
     // Find where the line hits the edge of from item
-    QPointF fromItemIntersectionPoint = WhereLineMeetsRect(polyLine, mSourceItem, mSourceItem->boundingRect());
+    QPointF fromItemIntersectionPoint = WhereLineMeetsRect(polyLine, mSourceItem->AsGraphicsItem(), mSourceItem->AsGraphicsItem()->boundingRect());
 
     // And use these points as our line
     setLine(QLineF(toItemIntersectionPoint, fromItemIntersectionPoint));
@@ -203,4 +205,10 @@ QRectF FsmConnectionSplitter::boundingRect() const
 {
     QRectF rectangle(-(mRadius / 2),-(mRadius / 2), mRadius / 2, mRadius / 2);
     return rectangle.adjusted(2, 2, 2, 2);
+}
+
+QVariant FsmConnectionSplitter::itemChange(GraphicsItemChange change, const QVariant& value)
+{
+    HandleItemChange(change);
+    return value;
 }

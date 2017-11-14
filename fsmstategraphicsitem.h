@@ -4,11 +4,13 @@
 #include <QGraphicsItem>
 #include <QSet>
 
+#include "iconnectableitem.h"
+
 class FsmConnectionGraphicsItem;
 
 constexpr int kRectSize = 200 / 2;
 
-class FsmStateGraphicsItem : public QGraphicsItem
+class FsmStateGraphicsItem : public IConnectableItem, public QGraphicsItem
 {
 public:
     FsmStateGraphicsItem(QGraphicsItem* pParent = nullptr);
@@ -46,23 +48,51 @@ public:
         }
     }
 
-    void ChangeInConnection(bool add, FsmConnectionGraphicsItem* pConnection)
+    void ChangeInConnection(bool add, IConnectableItem* pConnection)
     {
         ChangeConnectionT(add, mInboundConnections, pConnection);
     }
 
-    void ChangeOutConnection(bool add, FsmConnectionGraphicsItem* pConnection)
+    void ChangeOutConnection(bool add, IConnectableItem* pConnection)
     {
         ChangeConnectionT(add, mOutboundConnections, pConnection);
     }
 
     void SetName(QString name) { mName = name; }
     const QString& Name() const { return mName; }
+
+    virtual QGraphicsItem* AsGraphicsItem() override
+    {
+        return this;
+    }
+
+    virtual bool IsTerminal() const override
+    {
+        return true;
+    }
+
+    /*
+    virtual void AddOutItem(IConnectableItem* pToAdd) override
+    {
+        ChangeOutConnection(true, pToAdd);
+    }
+
+    virtual void AddInItem(IConnectableItem* pToAdd) override
+    {
+        ChangeInConnection(true, pToAdd);
+    }
+
+    virtual void SwapOutItem(IConnectableItem* pOldSource, IConnectableItem* pNewSource) override
+    {
+        ChangeOutConnection(false, pOldSource);
+        ChangeOutConnection(true, pNewSource);
+    }
+*/
 private:
     QRect mRect;
     QString mName;
-    QSet<FsmConnectionGraphicsItem*> mInboundConnections;
-    QSet<FsmConnectionGraphicsItem*> mOutboundConnections;
+    QSet<IConnectableItem*> mInboundConnections;
+    QSet<IConnectableItem*> mOutboundConnections;
     static unsigned int mInstaceCounter;
 };
 

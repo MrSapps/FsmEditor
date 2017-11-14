@@ -4,29 +4,36 @@
 #include <QGraphicsLineItem>
 #include <QPolygonF>
 
+#include "iconnectableitem.h"
+
 class FsmStateGraphicsItem;
 
-/*
-class IConnectableItem
-{
-public:
-    virtual ~IConnectableItem() { }
-};
-*/
 
 class FsmConnectionData
 {
 public:
-    FsmStateGraphicsItem* mStart = nullptr;
-    FsmStateGraphicsItem* mEnd = nullptr;
+    IConnectableItem* mStart = nullptr;
+    IConnectableItem* mEnd = nullptr;
 };
 
-class FsmConnectionSplitter : public QGraphicsItem
+class FsmConnectionSplitter : public IConnectableItem, public QGraphicsItem
 {
 public:
     FsmConnectionSplitter(QGraphicsItem *pParent = nullptr);
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
     QRectF boundingRect() const;
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
+
+    virtual QGraphicsItem* AsGraphicsItem() override
+    {
+        return this;
+    }
+
+    virtual bool IsTerminal() const override
+    {
+        return false;
+    }
+
 private:
     int mRadius = 30;
 };
@@ -34,7 +41,7 @@ private:
 class FsmConnectionGraphicsItem : public QGraphicsLineItem
 {
 public:
-    FsmConnectionGraphicsItem(FsmStateGraphicsItem* sourceItem, FsmStateGraphicsItem* destinationItem, QGraphicsItem* parent = nullptr);
+    FsmConnectionGraphicsItem(IConnectableItem* sourceItem, IConnectableItem* destinationItem, QGraphicsItem* parent = nullptr);
     FsmConnectionGraphicsItem(QSharedPointer<FsmConnectionData> connectionData, QGraphicsItem* parent = nullptr);
     ~FsmConnectionGraphicsItem();
 
@@ -47,14 +54,16 @@ public:
     void SyncPosition();
     void EnableArrowHead(bool enable);
     QSharedPointer<FsmConnectionData>& ConnectionData() { return mConnectionData; }
-    FsmStateGraphicsItem* SourceItem() { return mSourceItem; }
-    FsmStateGraphicsItem* DestinationItem() { return mDestinationItem; }
-    void SetSourceItem(FsmStateGraphicsItem* item) { mSourceItem = item; }
-    void SetDestinationItem(FsmStateGraphicsItem* item) { mDestinationItem = item; }
+
+    // Connection point or state
+    IConnectableItem* SourceItem() { return mSourceItem; }
+    IConnectableItem* DestinationItem() { return mDestinationItem; }
+    void SetSourceItem(IConnectableItem* item) { mSourceItem = item; }
+    void SetDestinationItem(IConnectableItem* item) { mDestinationItem = item; }
 
 private:
-    FsmStateGraphicsItem* mSourceItem = nullptr;
-    FsmStateGraphicsItem* mDestinationItem = nullptr;
+    IConnectableItem* mSourceItem = nullptr;
+    IConnectableItem* mDestinationItem = nullptr;
     QSharedPointer<FsmConnectionData> mConnectionData;
     bool mEnableArrowHead = false;
     bool mIsSelectionChanging = false;

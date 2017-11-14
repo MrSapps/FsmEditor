@@ -82,21 +82,36 @@ void FsmGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* pEvent)
     }
 }
 
-void FsmGraphicsScene::SplitLine(FsmConnectionGraphicsItem* pSplitMe, QPointF splitPos)
+void FsmGraphicsScene::SplitLine(FsmConnectionGraphicsItem* pLineToSplit, QPointF splitPos)
 {
+    // Create a circle splitter item at the click pos
     FsmConnectionSplitter* pSplitter = new FsmConnectionSplitter();
     pSplitter->setPos(splitPos);
     addItem(pSplitter);
 
-    pSplitMe->DestinationItem()->ChangeInConnection(false, pSplitMe);
-    //pSplitMe->SetDestinationItem(pSplitter);
+    // Remove line we are splitting form the destination items list of lines to sync
+    auto it = pLineToSplit->DestinationItem()->InConnections().find(pLineToSplit);
+    pLineToSplit->DestinationItem()->InConnections().erase(it);
 
-    qDebug() << "GO";
+    // Create a new line between the new circle item and the line to splits destination
+    FsmConnectionGraphicsItem* newLine = new FsmConnectionGraphicsItem(pSplitter, pLineToSplit->DestinationItem());
+    addItem(newLine);
 
+    // Set the split lines new destination to the circle item
+    pLineToSplit->SetDestinationItem(pSplitter);
 
-    //pSplitMe->SyncPosition();
+    // Ensure the circle moves the source line
+    pSplitter->InConnections().insert(pLineToSplit);
 
-    //FsmConnectionGraphicsItem* newLine = new FsmConnectionGraphicsItem()
+    // Turn off the arrow head on the split line
+    pLineToSplit->EnableArrowHead(false);
+
+    // If the new line segment is connected to a state and not another connection point then enable the arrow head
+    newLine->EnableArrowHead(newLine->DestinationItem()->IsTerminal());
+
+    // Fix up the positions
+    pLineToSplit->SyncPosition();
+    newLine->SyncPosition();
 }
 
 void FsmGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* pMouseEvent)
