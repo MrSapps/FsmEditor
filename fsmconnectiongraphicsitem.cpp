@@ -17,8 +17,6 @@ FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(IConnectableItem *sourceIte
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setPen(QPen(QColor(0,0,0), kLineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
-
-
     mSourceItem->OutConnections().insert(this);
     mDestinationItem->InConnections().insert(this);
 }
@@ -152,6 +150,40 @@ void FsmConnectionGraphicsItem::EnableArrowHead(bool enable)
     mEnableArrowHead = enable;
 }
 
+// TODO FIX ME
+static QSet<FsmConnectionGraphicsItem*> IterateSegments(FsmConnectionGraphicsItem* pSource)
+{
+    abort();
+
+    FsmConnectionGraphicsItem* pItem = pSource;
+
+    QSet<FsmConnectionGraphicsItem*> ret;
+    ret.insert(pSource);
+
+    while (!pItem->SourceItem()->IsTerminal())
+    {
+        ret.insert(pItem);
+        if (pItem->SourceItem()->InConnections().empty())
+        {
+            break;
+        }
+        pItem = *pItem->SourceItem()->InConnections().begin();
+    }
+
+    pItem = pSource;
+
+    while (!pItem->DestinationItem()->IsTerminal())
+    {
+        ret.insert(pItem);
+        if (pItem->SourceItem()->OutConnections().empty())
+        {
+            break;
+        }
+        pItem = *pItem->SourceItem()->OutConnections().begin();
+    }
+    return ret;
+}
+
 QVariant FsmConnectionGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
 {
     if (mIsSelectionChanging)
@@ -162,7 +194,7 @@ QVariant FsmConnectionGraphicsItem::itemChange(GraphicsItemChange change, const 
     if (change == ItemSelectedChange)
     {
         mIsSelectionChanging = true; // Prevent re-entry else we'll blow the stack via inf recursion
-        QSet<FsmConnectionGraphicsItem*> segments;// = IterateSegments(this);
+        QSet<FsmConnectionGraphicsItem*> segments = IterateSegments(this);
         foreach(FsmConnectionGraphicsItem* segment, segments)
         {
             if (value == true)

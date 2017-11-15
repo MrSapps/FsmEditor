@@ -31,35 +31,15 @@ public:
         return mRect;
     }
 
-    template<class T, class U>
-    void ChangeConnectionT(bool add, T& collection, U* pConnection)
+    void SetName(QString name)
     {
-        if (add)
-        {
-            collection.insert(pConnection);
-        }
-        else
-        {
-            auto it = collection.find(pConnection);
-            if (it != collection.end())
-            {
-                collection.erase(it);
-            }
-        }
+        mName = name;
     }
 
-    void ChangeInConnection(bool add, IConnectableItem* pConnection)
+    const QString& Name() const
     {
-        ChangeConnectionT(add, mInboundConnections, pConnection);
+        return mName;
     }
-
-    void ChangeOutConnection(bool add, IConnectableItem* pConnection)
-    {
-        ChangeConnectionT(add, mOutboundConnections, pConnection);
-    }
-
-    void SetName(QString name) { mName = name; }
-    const QString& Name() const { return mName; }
 
     virtual QGraphicsItem* AsGraphicsItem() override
     {
@@ -71,28 +51,9 @@ public:
         return true;
     }
 
-    /*
-    virtual void AddOutItem(IConnectableItem* pToAdd) override
-    {
-        ChangeOutConnection(true, pToAdd);
-    }
-
-    virtual void AddInItem(IConnectableItem* pToAdd) override
-    {
-        ChangeInConnection(true, pToAdd);
-    }
-
-    virtual void SwapOutItem(IConnectableItem* pOldSource, IConnectableItem* pNewSource) override
-    {
-        ChangeOutConnection(false, pOldSource);
-        ChangeOutConnection(true, pNewSource);
-    }
-*/
 private:
     QRect mRect;
     QString mName;
-    QSet<IConnectableItem*> mInboundConnections;
-    QSet<IConnectableItem*> mOutboundConnections;
     static unsigned int mInstaceCounter;
 };
 

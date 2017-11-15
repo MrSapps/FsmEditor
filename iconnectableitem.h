@@ -20,9 +20,4 @@ public:
 private:
     QSet<FsmConnectionGraphicsItem*> mInConnections;
     QSet<FsmConnectionGraphicsItem*> mOutConnections;
-
-
-    //virtual void AddOutItem(IConnectableItem* pToAdd) = 0;
-    //virtual void AddInItem(IConnectableItem* pToAdd) = 0;
-    //virtual void SwapOutItem(IConnectableItem* pOldSource, IConnectableItem* pNewSource) = 0;
 };
