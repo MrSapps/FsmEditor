@@ -84,10 +84,14 @@ void FsmGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* pEvent)
 
 void FsmGraphicsScene::SplitLine(FsmConnectionGraphicsItem* pLineToSplit, QPointF splitPos)
 {
+    clearSelection();
+
     // Create a circle splitter item at the click pos
     FsmConnectionSplitter* pSplitter = new FsmConnectionSplitter();
     pSplitter->setPos(splitPos);
     addItem(pSplitter);
+
+    pSplitter->setSelected(true);
 
     // Remove line we are splitting form the destination items list of lines to sync
     auto it = pLineToSplit->DestinationItem()->InConnections().find(pLineToSplit);

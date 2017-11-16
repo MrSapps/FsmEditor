@@ -3,6 +3,7 @@
 
 #include <QPainter>
 #include <QSet>
+#include <QDebug>
 
 const qreal Pi = 3.14;
 const int kLineWidth = 4;
@@ -153,34 +154,39 @@ void FsmConnectionGraphicsItem::EnableArrowHead(bool enable)
 // TODO FIX ME
 static QSet<FsmConnectionGraphicsItem*> IterateSegments(FsmConnectionGraphicsItem* pSource)
 {
-    abort();
-
     FsmConnectionGraphicsItem* pItem = pSource;
 
     QSet<FsmConnectionGraphicsItem*> ret;
     ret.insert(pSource);
 
+    qDebug() << "Collect Source items";
     while (!pItem->SourceItem()->IsTerminal())
     {
+        qDebug() << (uint64_t)pItem << " is not terminal";
         ret.insert(pItem);
         if (pItem->SourceItem()->InConnections().empty())
         {
+            qDebug() << "No more connections";
             break;
         }
         pItem = *pItem->SourceItem()->InConnections().begin();
+        qDebug() << "Next item is " << (uint64_t)pItem;
     }
 
+    ret.insert(pItem);
     pItem = pSource;
 
     while (!pItem->DestinationItem()->IsTerminal())
     {
         ret.insert(pItem);
-        if (pItem->SourceItem()->OutConnections().empty())
+        if (pItem->DestinationItem()->OutConnections().empty())
         {
             break;
         }
-        pItem = *pItem->SourceItem()->OutConnections().begin();
+        pItem = *pItem->DestinationItem()->OutConnections().begin();
     }
+    ret.insert(pItem);
+
     return ret;
 }
 
