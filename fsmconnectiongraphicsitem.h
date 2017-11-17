@@ -8,14 +8,6 @@
 
 class FsmStateGraphicsItem;
 
-
-class FsmConnectionData
-{
-public:
-    IConnectableItem* mStart = nullptr;
-    IConnectableItem* mEnd = nullptr;
-};
-
 class FsmConnectionSplitter : public IConnectableItem, public QGraphicsItem
 {
 public:
@@ -42,7 +34,7 @@ class FsmConnectionGraphicsItem : public QGraphicsLineItem
 {
 public:
     FsmConnectionGraphicsItem(IConnectableItem* sourceItem, IConnectableItem* destinationItem, QGraphicsItem* parent = nullptr);
-    FsmConnectionGraphicsItem(QSharedPointer<FsmConnectionData> connectionData, QGraphicsItem* parent = nullptr);
+    FsmConnectionGraphicsItem(QGraphicsItem* parent = nullptr);
     ~FsmConnectionGraphicsItem();
 
     virtual QRectF boundingRect() const override;
@@ -53,7 +45,6 @@ public:
     QPointF WhereLineMeetsRect(const QLineF& polyLine, QGraphicsItem* item, const QRectF& bRect);
     void SyncPosition();
     void EnableArrowHead(bool enable);
-    QSharedPointer<FsmConnectionData>& ConnectionData() { return mConnectionData; }
 
     // Connection point or state
     IConnectableItem* SourceItem() { return mSourceItem; }
@@ -64,7 +55,6 @@ public:
 private:
     IConnectableItem* mSourceItem = nullptr;
     IConnectableItem* mDestinationItem = nullptr;
-    QSharedPointer<FsmConnectionData> mConnectionData;
     bool mEnableArrowHead = false;
     bool mIsSelectionChanging = false;
     QPolygonF mArrowHead;

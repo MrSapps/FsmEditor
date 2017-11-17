@@ -99,6 +99,8 @@ void FsmGraphicsScene::SplitLine(FsmConnectionGraphicsItem* pLineToSplit, QPoint
 
     // Create a new line between the new circle item and the line to splits destination
     FsmConnectionGraphicsItem* newLine = new FsmConnectionGraphicsItem(pSplitter, pLineToSplit->DestinationItem());
+    pSplitter->OutConnections().insert(newLine);
+    pLineToSplit->DestinationItem()->InConnections().insert(newLine);
     addItem(newLine);
 
     // Set the split lines new destination to the circle item
@@ -125,7 +127,7 @@ void FsmGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* pMouseEvent)
         QGraphicsItem* pItemUnderMouse = itemAt(pMouseEvent->scenePos(), QTransform());
         if (pItemUnderMouse && pItemUnderMouse->type() == FsmStateGraphicsItem::Type)
         {
-            mInProgressConnection = new FsmConnectionGraphicsItem(QSharedPointer<FsmConnectionData>(new FsmConnectionData()));
+            mInProgressConnection = new FsmConnectionGraphicsItem();
             mInProgressConnection->setLine(QLineF(pMouseEvent->scenePos(), pMouseEvent->scenePos()));
             addItem(mInProgressConnection);
         }
@@ -183,6 +185,8 @@ void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
             FsmStateGraphicsItem* sourceItem = qgraphicsitem_cast<FsmStateGraphicsItem *>(startItems.first());
             FsmStateGraphicsItem* destinationItem = qgraphicsitem_cast<FsmStateGraphicsItem *>(endItems.first());
             FsmConnectionGraphicsItem* connection = new FsmConnectionGraphicsItem(sourceItem, destinationItem);
+            sourceItem->OutConnections().insert(connection);
+            destinationItem->InConnections().insert(connection);
             connection->EnableArrowHead(true);
             connection->setZValue(-1000.0);
             addItem(connection);

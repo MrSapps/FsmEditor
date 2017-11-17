@@ -12,18 +12,12 @@ const int kArrowSize = 20;
 FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(IConnectableItem *sourceItem, IConnectableItem *destinationItem, QGraphicsItem* parent)
     : QGraphicsLineItem(parent), mDestinationItem(destinationItem), mSourceItem(sourceItem)
 {
-    mConnectionData = QSharedPointer<FsmConnectionData>(new FsmConnectionData());
-    mConnectionData->mStart = mSourceItem;
-    mConnectionData->mEnd = mDestinationItem;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setPen(QPen(QColor(0,0,0), kLineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-
-    mSourceItem->OutConnections().insert(this);
-    mDestinationItem->InConnections().insert(this);
 }
 
-FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(QSharedPointer<FsmConnectionData> connectionData, QGraphicsItem *parent)
-    : QGraphicsLineItem(parent), mConnectionData(connectionData)
+FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(QGraphicsItem* parent)
+    : QGraphicsLineItem(parent)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setPen(QPen(QColor(0,0,0), kLineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -31,16 +25,7 @@ FsmConnectionGraphicsItem::FsmConnectionGraphicsItem(QSharedPointer<FsmConnectio
 
 FsmConnectionGraphicsItem::~FsmConnectionGraphicsItem()
 {
-    /*
-    if (mSourceItem)
-    {
-        mSourceItem->ChangeOutConnection(false, this);
-    }
 
-    if (mDestinationItem)
-    {
-        mDestinationItem->ChangeInConnection(false, this);
-    }*/
 }
 
 QRectF FsmConnectionGraphicsItem::boundingRect() const
