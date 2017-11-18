@@ -11,10 +11,21 @@ class FsmStateGraphicsItem;
 class FsmConnectionSplitter : public IConnectableItem, public QGraphicsItem
 {
 public:
-    FsmConnectionSplitter(QGraphicsItem *pParent = nullptr);
-    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-    QRectF boundingRect() const;
+    FsmConnectionSplitter(QGraphicsItem* pParent = nullptr);
+
+    virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    virtual QRectF boundingRect() const override;
     virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
+
+    enum
+    {
+        Type = UserType + 2
+    };
+
+    virtual int type() const override
+    {
+        return Type;
+    }
 
     virtual QGraphicsItem* AsGraphicsItem() override
     {

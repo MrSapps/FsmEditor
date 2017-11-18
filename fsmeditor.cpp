@@ -41,7 +41,7 @@ void FsmStatePropertyEditor::SetSelection(FsmStateGraphicsItem* selection)
         mSelected = selection;
         if (mSelected)
         {
-            LineEditProperty* item = new LineEditProperty(QStringList {"Name", selection->Name() });
+            LineEditProperty* item = new LineEditProperty(QStringList {tr("Name"), selection->Name() });
             connect(item, SIGNAL(OnCommit(QString)), this, SLOT(OnCommitTextProperty(QString)));
             mWidget->addTopLevelItem(item);
 
@@ -62,7 +62,7 @@ void FsmStatePropertyEditor::OnCommitTextProperty(QString text)
 }
 
 FsmEditor::FsmEditor(QWidget* parent)
-  : QMainWindow(parent), mUi(new Ui::FsmEditor)
+  : QMainWindow(parent), mUi(new Ui::FsmEditor())
 {
     mUi->setupUi(this);
 
@@ -76,7 +76,6 @@ FsmEditor::FsmEditor(QWidget* parent)
     setCentralWidget(graphicsView);
 
     PropertyTreeWidget* propertyListWidget = new PropertyTreeWidget(this);
-
     {
         QDockWidget* dock = new QDockWidget(tr("Property editor"), this);
         dock->setFeatures(QDockWidget::DockWidgetMovable);
@@ -130,7 +129,7 @@ void FsmEditor::on_actionAbout_Qt_triggered()
 
 void FsmEditor::on_actionAbout_triggered()
 {
-    QMessageBox::information(this, "About", "ALIVE engine object FSM editor.");
+    QMessageBox::information(this, tr("About"), tr("ALIVE engine object FSM editor."));
 }
 
 void FsmEditor::on_actionDelete_triggered()

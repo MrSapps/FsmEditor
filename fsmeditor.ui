@@ -40,6 +40,7 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionDelete"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -68,7 +69,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionDelete"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">

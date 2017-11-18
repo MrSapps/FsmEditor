@@ -199,7 +199,38 @@ void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
 void FsmGraphicsScene::DeleteSelection()
 {
     // TODO
-    this->clearSelection();
+    QList<QGraphicsItem*> selected = selectedItems();
+
+    // Collect the connection points
+    QList<FsmConnectionSplitter*> connections;
+    foreach (QGraphicsItem* item, selected)
+    {
+        if (item->type() == FsmConnectionSplitter::Type)
+        {
+            connections.push_back(qgraphicsitem_cast<FsmConnectionSplitter*>(item));
+        }
+    }
+
+    foreach (FsmConnectionSplitter* splitterToDelete, connections)
+    {
+        // Get the items that the circle connects to
+        IConnectableItem* pNextDestination = (*splitterToDelete->OutConnections().begin())->DestinationItem();
+
+        // Set the destination of the input from the circle being deleted to the item the circle was connected to
+        (*splitterToDelete->InConnections().begin())->SetDestinationItem(pNextDestination);
+
+        (*splitterToDelete->InConnections().begin())->SyncPosition();
+        (*splitterToDelete->InConnections().begin())->EnableArrowHead(pNextDestination->IsTerminal());
+
+        pNextDestination->InConnections().remove(*splitterToDelete->OutConnections().begin());
+        pNextDestination->InConnections().insert(*splitterToDelete->InConnections().begin());
+
+        // Remove the circle and redundant line segment from the scene
+        removeItem(*splitterToDelete->OutConnections().begin());
+        removeItem(splitterToDelete);
+        delete (*splitterToDelete->OutConnections().begin());
+        delete splitterToDelete;
+    }
 }
 
 /*
