@@ -4,15 +4,22 @@
 #include <QKeyEvent>
 #include <QTimer>
 
-void LineEditProperty::CreateWidget()
+void LineEditProperty::CreateEditorWidget()
 {
     mWidget = new QLineEdit();
-    connect(mWidget, SIGNAL(destroyed(QObject*)), this, SLOT(WidgetDeleted(QObject*)));
+    // When the user clicks off the property text edit in the tree it will auto be deleted
+    // so we use destroyed to ensure mWidget does not become dangling.
+    connect(mWidget, SIGNAL(destroyed(QObject*)), this, SLOT(QLineEditWidgetDeleted(QObject*)));
+
+    // Wire up pressing enter in the text edit as a short cut to saving the changes.
     connect(mWidget, SIGNAL(returnPressed()), this, SLOT(Commit()));
-    mWidget->setText(text(1));
+
+    // Set the "Value" column text as the line edit text and select all of it
+    // so it is deleted/replaced as soon as the user starts typing in it.
+    mWidget->setText(text(Columns::eValue));
     mWidget->selectAll();
 
-    treeWidget()->setItemWidget(this, 1, mWidget);
+    treeWidget()->setItemWidget(this, Columns::eValue, mWidget);
     mWidget->setFocus();
 }
 
@@ -21,24 +28,24 @@ void LineEditProperty::Commit()
     if (mWidget)
     {
         emit OnCommit(mWidget->text());
-        setText(1, mWidget->text());
+        setText(Columns::eValue, mWidget->text());
     }
-    treeWidget()->setItemWidget(this, 1, nullptr);
+    treeWidget()->setItemWidget(this, Columns::eValue, nullptr);
 }
 
-void LineEditProperty::WidgetDeleted(QObject*)
+void LineEditProperty::QLineEditWidgetDeleted(QObject*)
 {
     mWidget = nullptr;
 }
 
-void ReadOnlyTextProperty::CreateWidget()
+void ReadOnlyTextProperty::CreateEditorWidget()
 {
-
+    // Read only so no editor widget to create
 }
 
 void ReadOnlyTextProperty::Commit()
 {
-
+    // Read only so never anything to update
 }
 
 PropertyTreeWidget::PropertyTreeWidget(QWidget* pParent)
@@ -77,9 +84,9 @@ void PropertyTreeWidget::TreeItemClicked(QTreeWidgetItem* pItem, int index)
 
     mLastClickedItem = pItem;
 
-    if (index == 1)
+    if (index == Columns::eValue)
     {
-        dynamic_cast<IProperty*>(pItem)->CreateWidget();
+        dynamic_cast<IProperty*>(pItem)->CreateEditorWidget();
     }
     else
     {
@@ -95,7 +102,7 @@ void PropertyTreeWidget::keyPressEvent(QKeyEvent* event)
         auto item = currentItem();
         if ( item )
         {
-            setItemWidget(item, 1, nullptr);
+            setItemWidget(item, Columns::eValue, nullptr);
         }
     }
     else

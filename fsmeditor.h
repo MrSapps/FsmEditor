@@ -40,6 +40,8 @@ private slots:
 
     void on_actionAbout_triggered();
 
+    void on_actionDelete_triggered();
+
 private:
     Ui::FsmEditor* mUi;
     QUndoStack mUndoStack;

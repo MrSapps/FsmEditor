@@ -20,6 +20,8 @@ public:
 
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* pMouseEvent) override;
 
+    void DeleteSelection();
+
 //public slots:
     //void SelectionChanged();
 

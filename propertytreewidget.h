@@ -9,7 +9,7 @@ class IProperty
 {
 public:
     virtual ~IProperty() = default;
-    virtual void CreateWidget() = 0;
+    virtual void CreateEditorWidget() = 0;
     virtual void Commit() = 0;
 };
 
@@ -18,13 +18,13 @@ class LineEditProperty : public QObject, public QTreeWidgetItem, public IPropert
     Q_OBJECT
 public:
     using QTreeWidgetItem::QTreeWidgetItem;
-    virtual void CreateWidget() override;
+    virtual void CreateEditorWidget() override;
 public slots:
     virtual void Commit() override;
 signals:
     void OnCommit(QString text);
 private slots:
-    void WidgetDeleted(QObject*);
+    void QLineEditWidgetDeleted(QObject*);
 private:
     QLineEdit* mWidget = nullptr;
 };
@@ -32,8 +32,14 @@ private:
 class ReadOnlyTextProperty : public QTreeWidgetItem, public IProperty
 {
     using QTreeWidgetItem::QTreeWidgetItem;
-    virtual void CreateWidget() override;
+    virtual void CreateEditorWidget() override;
     virtual void Commit() override;
+};
+
+enum Columns
+{
+    eName,
+    eValue
 };
 
 class PropertyTreeWidget : public QTreeWidget

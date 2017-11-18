@@ -18,7 +18,6 @@
 
 /*
 TODO:
-Add connection split items
 Delete circles/merge lines
 Deleteing state delete whole connection
 Deleting part of a connection delete whole connection
@@ -132,4 +131,9 @@ void FsmEditor::on_actionAbout_Qt_triggered()
 void FsmEditor::on_actionAbout_triggered()
 {
     QMessageBox::information(this, "About", "ALIVE engine object FSM editor.");
+}
+
+void FsmEditor::on_actionDelete_triggered()
+{
+    mScene->DeleteSelection();
 }

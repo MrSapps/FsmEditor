@@ -196,6 +196,12 @@ void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
     QGraphicsScene::mouseReleaseEvent(pMouseEvent);
 }
 
+void FsmGraphicsScene::DeleteSelection()
+{
+    // TODO
+    this->clearSelection();
+}
+
 /*
 void FsmGraphicsScene::SelectionChanged()
 {
