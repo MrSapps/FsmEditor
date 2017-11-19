@@ -27,7 +27,7 @@ public:
 
 private:
     void DeleteAllSegments(FsmConnectionGraphicsItem* connection);
-    FsmConnectionGraphicsItem* GetStartingSegment(FsmConnectionGraphicsItem* pArbitarySegment);
+    static FsmConnectionGraphicsItem* GetStartingSegment(FsmConnectionGraphicsItem* pArbitarySegment);
 
     void SplitLine(FsmConnectionGraphicsItem* pLineToSplit, QPointF splitPos);
 

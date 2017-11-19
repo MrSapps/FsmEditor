@@ -261,20 +261,25 @@ static auto GetItemsOfType(QList<QGraphicsItem*>& items)
     return itemsOfT;
 }
 
+template<class T, class Filter>
+static auto GetItemsOfTypeFiltered(QList<QGraphicsItem*>& items, Filter filter)
+{
+    auto itemsOfT = GetItemsOfType<T>(items);
+    QSet<T*> filteredItemsOfT;
+    foreach (T* item, itemsOfT)
+    {
+        filteredItemsOfT.insert(filter(item));
+    }
+    return filteredItemsOfT;
+}
+
 void FsmGraphicsScene::DeleteSelection()
 {
-    // TODO
-    QList<QGraphicsItem*> selected = selectedItems();
+    // Get all selected state items
+    QSet<FsmStateGraphicsItem*> statesToDelete = GetItemsOfType<FsmStateGraphicsItem>(selectedItems());
 
-    // State deletion:
-
-    // TODO: Collect selected states
-    QSet<FsmStateGraphicsItem*> statesToDelete = GetItemsOfType<FsmStateGraphicsItem>(selected);
-
-
+    // Collect all in/out line segments from selected states
     QSet<FsmConnectionGraphicsItem*> startingSelectedSegments;
-
-    // TODO: Collect all in/out line segments to given states
     foreach (FsmStateGraphicsItem* item, statesToDelete)
     {
         foreach(FsmConnectionGraphicsItem* pOutConnection, item->OutConnections())
@@ -288,60 +293,28 @@ void FsmGraphicsScene::DeleteSelection()
         }
     }
 
-    // TODO: Erase the line segements
+    // Get line segments that are selected but the connecte state(s) are not selected
+    startingSelectedSegments += GetItemsOfTypeFiltered<FsmConnectionGraphicsItem>(selectedItems(), GetStartingSegment);
 
-    // Connection deletion:
-
-    // TODO: Collect any other singular selected line segments
-
-    foreach (QGraphicsItem* item, selected)
-    {
-        if (item->type() == FsmConnectionGraphicsItem::Type)
-        {
-            FsmConnectionGraphicsItem* pArbitarySegment = qgraphicsitem_cast<FsmConnectionGraphicsItem*>(item);
-            startingSelectedSegments.insert(GetStartingSegment(pArbitarySegment));
-        }
-    }
-
-    // TODO: Erase the line segements
+    // Erase the line segements
     foreach (FsmConnectionGraphicsItem* item, startingSelectedSegments)
     {
         DeleteAllSegments(item);
     }
 
-    // Refresh selection to remove deleted items
-    selected = selectedItems();
-
-    // TODO: Erase the states
+    // Erase the states
     foreach (FsmStateGraphicsItem* item, statesToDelete)
     {
         removeItem(item);
         delete item;
     }
 
-    // Refresh selection to remove deleted items
-    selected = selectedItems();
+    // Collect the connection splitters, these must have been splitters selected that didn't have
+    // the connected to state(s) or line segments selected at this point as we have deleted those before this point.
+    QSet<FsmConnectionSplitter*> connectionSplitters = GetItemsOfType<FsmConnectionSplitter>(selectedItems());
 
-    // Connection splitter deletion:
-
-    // Collect the connection points
-    QSet<FsmConnectionSplitter*> connectionSplitters;
-    foreach (QGraphicsItem* item, selected)
-    {
-        if (item->type() == FsmConnectionSplitter::Type)
-        {
-            connectionSplitters.insert(qgraphicsitem_cast<FsmConnectionSplitter*>(item));
-        }
-    }
-
-    // Get any remaining singular selected connection splitters
-    QSet<FsmConnectionSplitter*> connectionSplittersToMerge;
-    foreach (FsmConnectionSplitter* splitter, connectionSplitters)
-    {
-        connectionSplittersToMerge.insert(splitter);
-    }
-
-    foreach (FsmConnectionSplitter* splitterToDelete, connectionSplittersToMerge)
+    // Remove the connection point and "merge" line 2 remaining line segments
+    foreach (FsmConnectionSplitter* splitterToDelete, connectionSplitters)
     {
         // Get the items that the circle connects to
         IConnectableItem* pNextDestination = (*splitterToDelete->OutConnections().begin())->DestinationItem();
