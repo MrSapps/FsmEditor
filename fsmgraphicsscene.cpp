@@ -156,7 +156,17 @@ void FsmGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* pMouseEvent)
     QGraphicsScene::mouseMoveEvent(pMouseEvent);
 }
 
-void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
+static FsmStateGraphicsItem* GetDestinationState(FsmConnectionGraphicsItem* pConnection)
+{
+    while (!pConnection->DestinationItem()->IsTerminal())
+    {
+        pConnection = (*pConnection->DestinationItem()->OutConnections().begin());
+    }
+
+    return qgraphicsitem_cast<FsmStateGraphicsItem*>(pConnection->DestinationItem()->AsGraphicsItem());
+}
+
+void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* pMouseEvent)
 {
     if (mInProgressConnection)
     {
@@ -176,6 +186,8 @@ void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
         delete mInProgressConnection;
         mInProgressConnection = nullptr;
 
+        // Check we have a source and destination, that they are both FsmStateGraphicsItem's
+        // and isn't attempting to connect to itself.
         if (startItems.count() > 0 &&
             endItems.count() > 0 &&
             startItems.first()->type() == FsmStateGraphicsItem::Type &&
@@ -184,13 +196,30 @@ void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
         {
             FsmStateGraphicsItem* sourceItem = qgraphicsitem_cast<FsmStateGraphicsItem *>(startItems.first());
             FsmStateGraphicsItem* destinationItem = qgraphicsitem_cast<FsmStateGraphicsItem *>(endItems.first());
-            FsmConnectionGraphicsItem* connection = new FsmConnectionGraphicsItem(sourceItem, destinationItem);
-            sourceItem->OutConnections().insert(connection);
-            destinationItem->InConnections().insert(connection);
-            connection->EnableArrowHead(true);
-            connection->setZValue(-1000.0);
-            addItem(connection);
-            connection->SyncPosition();
+
+            // Check there isn't already a connection between source and destination
+            bool alreadyExists = false;
+            foreach(FsmConnectionGraphicsItem* outConnnection, sourceItem->OutConnections())
+            {
+                if (GetDestinationState(outConnnection) == destinationItem)
+                {
+                    clearSelection();
+                    outConnnection->setSelected(true);
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (!alreadyExists)
+            {
+                FsmConnectionGraphicsItem* connection = new FsmConnectionGraphicsItem(sourceItem, destinationItem);
+                sourceItem->OutConnections().insert(connection);
+                destinationItem->InConnections().insert(connection);
+                connection->EnableArrowHead(true);
+                connection->setZValue(-1000.0);
+                addItem(connection);
+                connection->SyncPosition();
+            }
         }
     }
     QGraphicsScene::mouseReleaseEvent(pMouseEvent);

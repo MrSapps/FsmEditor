@@ -18,8 +18,6 @@
 
 /*
 TODO:
-Connecting items follows connection segments
-Rename state text
 Undo/redo
 Serialization
 */
