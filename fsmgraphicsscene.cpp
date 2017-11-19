@@ -196,22 +196,152 @@ void FsmGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pMouseEvent)
     QGraphicsScene::mouseReleaseEvent(pMouseEvent);
 }
 
+void FsmGraphicsScene::DeleteAllSegments(FsmConnectionGraphicsItem* connection)
+{
+    // Disconnect from the source item
+    FsmStateGraphicsItem* pSourceState = qgraphicsitem_cast<FsmStateGraphicsItem*>(connection->SourceItem()->AsGraphicsItem());
+    pSourceState->OutConnections().remove(connection);
+    for (;;)
+    {
+        IConnectableItem* pDestination = connection->DestinationItem();
+
+        // Remove the line segment
+        removeItem(connection);
+
+        if (pDestination->IsTerminal())
+        {
+            FsmStateGraphicsItem* pDestinationState = qgraphicsitem_cast<FsmStateGraphicsItem*>(pDestination->AsGraphicsItem());
+            pDestinationState->InConnections().remove(connection);
+            delete connection;
+            break;
+        }
+        else
+        {
+            FsmConnectionSplitter* pSplitter = qgraphicsitem_cast<FsmConnectionSplitter*>(pDestination->AsGraphicsItem());
+
+            delete connection;
+
+            connection = *pSplitter->OutConnections().begin();
+
+            // Remove the splitter
+            removeItem(pSplitter);
+            delete pSplitter;
+
+        }
+    }
+}
+
+FsmConnectionGraphicsItem* FsmGraphicsScene::GetStartingSegment(FsmConnectionGraphicsItem* pArbitarySegment)
+{
+    FsmConnectionGraphicsItem* pStartingSegment = pArbitarySegment;
+    for (;;)
+    {
+        // We've reached the starting state item so stop just before it
+        if (pStartingSegment->SourceItem()->IsTerminal())
+        {
+            break;
+        }
+        // Otherwise its a connection point so get its input segment
+        pStartingSegment = *pStartingSegment->SourceItem()->InConnections().begin();
+    }
+    return pStartingSegment;
+}
+
+template<class T>
+static auto GetItemsOfType(QList<QGraphicsItem*>& items)
+{
+    QSet<T*> itemsOfT;
+    foreach (QGraphicsItem* item, items)
+    {
+        if (item->type() == T::Type)
+        {
+            itemsOfT.insert(qgraphicsitem_cast<T*>(item));
+        }
+    }
+    return itemsOfT;
+}
+
 void FsmGraphicsScene::DeleteSelection()
 {
     // TODO
     QList<QGraphicsItem*> selected = selectedItems();
 
+    // State deletion:
+
+    // TODO: Collect selected states
+    QSet<FsmStateGraphicsItem*> statesToDelete = GetItemsOfType<FsmStateGraphicsItem>(selected);
+
+
+    QSet<FsmConnectionGraphicsItem*> startingSelectedSegments;
+
+    // TODO: Collect all in/out line segments to given states
+    foreach (FsmStateGraphicsItem* item, statesToDelete)
+    {
+        foreach(FsmConnectionGraphicsItem* pOutConnection, item->OutConnections())
+        {
+            startingSelectedSegments.insert(GetStartingSegment(pOutConnection));
+        }
+
+        foreach(FsmConnectionGraphicsItem* pInConnection, item->InConnections())
+        {
+            startingSelectedSegments.insert(GetStartingSegment(pInConnection));
+        }
+    }
+
+    // TODO: Erase the line segements
+
+    // Connection deletion:
+
+    // TODO: Collect any other singular selected line segments
+
+    foreach (QGraphicsItem* item, selected)
+    {
+        if (item->type() == FsmConnectionGraphicsItem::Type)
+        {
+            FsmConnectionGraphicsItem* pArbitarySegment = qgraphicsitem_cast<FsmConnectionGraphicsItem*>(item);
+            startingSelectedSegments.insert(GetStartingSegment(pArbitarySegment));
+        }
+    }
+
+    // TODO: Erase the line segements
+    foreach (FsmConnectionGraphicsItem* item, startingSelectedSegments)
+    {
+        DeleteAllSegments(item);
+    }
+
+    // Refresh selection to remove deleted items
+    selected = selectedItems();
+
+    // TODO: Erase the states
+    foreach (FsmStateGraphicsItem* item, statesToDelete)
+    {
+        removeItem(item);
+        delete item;
+    }
+
+    // Refresh selection to remove deleted items
+    selected = selectedItems();
+
+    // Connection splitter deletion:
+
     // Collect the connection points
-    QList<FsmConnectionSplitter*> connections;
+    QSet<FsmConnectionSplitter*> connectionSplitters;
     foreach (QGraphicsItem* item, selected)
     {
         if (item->type() == FsmConnectionSplitter::Type)
         {
-            connections.push_back(qgraphicsitem_cast<FsmConnectionSplitter*>(item));
+            connectionSplitters.insert(qgraphicsitem_cast<FsmConnectionSplitter*>(item));
         }
     }
 
-    foreach (FsmConnectionSplitter* splitterToDelete, connections)
+    // Get any remaining singular selected connection splitters
+    QSet<FsmConnectionSplitter*> connectionSplittersToMerge;
+    foreach (FsmConnectionSplitter* splitter, connectionSplitters)
+    {
+        connectionSplittersToMerge.insert(splitter);
+    }
+
+    foreach (FsmConnectionSplitter* splitterToDelete, connectionSplittersToMerge)
     {
         // Get the items that the circle connects to
         IConnectableItem* pNextDestination = (*splitterToDelete->OutConnections().begin())->DestinationItem();

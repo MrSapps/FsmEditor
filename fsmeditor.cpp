@@ -18,9 +18,6 @@
 
 /*
 TODO:
-Delete circles/merge lines
-Deleteing state delete whole connection
-Deleting part of a connection delete whole connection
 Connecting items follows connection segments
 Rename state text
 Undo/redo

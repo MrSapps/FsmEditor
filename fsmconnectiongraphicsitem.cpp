@@ -30,7 +30,7 @@ FsmConnectionGraphicsItem::~FsmConnectionGraphicsItem()
 
 QRectF FsmConnectionGraphicsItem::boundingRect() const
 {
-    qreal extra = (pen().width() + kArrowSize) / 2.0;
+    qreal extra = (pen().width() + kArrowSize);
 
     return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),
                                       line().p2().y() - line().p1().y()))
@@ -48,7 +48,7 @@ QPainterPath FsmConnectionGraphicsItem::shape() const
     return path;
 }
 
-void FsmConnectionGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void FsmConnectionGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/)
 {
     if (mSourceItem && mSourceItem->AsGraphicsItem()->collidesWithItem(mDestinationItem->AsGraphicsItem()))
     {
@@ -210,7 +210,7 @@ FsmConnectionSplitter::FsmConnectionSplitter(QGraphicsItem* pParent)
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 }
 
-void FsmConnectionSplitter::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void FsmConnectionSplitter::paint(QPainter *painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/)
 {
     painter->setBrush(QColor(255, 255, 255));
     if (isSelected())
