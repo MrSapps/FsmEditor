@@ -11,6 +11,8 @@ class FsmGraphicsScene : public QGraphicsScene
     //Q_OBJECT
 public:
     FsmGraphicsScene(QObject* pParent, QUndoStack& undoStack);
+    bool Open(QString fileName);
+    bool Save(QString fileName);
 
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* pEvent) override;
 

@@ -365,6 +365,18 @@ void FsmGraphicsScene::DeleteSelection()
     }
 }
 
+bool FsmGraphicsScene::Open(QString fileName)
+{
+    // TODO
+    return false;
+}
+
+bool FsmGraphicsScene::Save(QString fileName)
+{
+    // TODO
+    return false;
+}
+
 /*
 void FsmGraphicsScene::SelectionChanged()
 {

@@ -12,14 +12,31 @@
 #include <QTreeWidget>
 #include <QMessageBox>
 #include <QLineEdit>
+#include <QCloseEvent>
+#include <QFileDialog>
 #include "fsmgraphicsscene.h"
 #include "fsmstategraphicsitem.h"
 #include "propertytreewidget.h"
 
 /*
 TODO:
-Undo/redo
+Impl commands:
+Open
+New
+Save
+Save as
+exit
+
+Help
+Show grid
+snap to grid
+size scene to content
+resize scene
+
+add cmds to tool bar/add icons
+
 Serialization
+Undo/redo
 */
 
 FsmStatePropertyEditor::FsmStatePropertyEditor(PropertyTreeWidget* widget, QObject* parent)
@@ -60,6 +77,11 @@ FsmEditor::FsmEditor(QWidget* parent)
   : QMainWindow(parent), mUi(new Ui::FsmEditor())
 {
     mUi->setupUi(this);
+
+    QList<QAction*> actions;
+    actions.push_back(mUndoStack.createUndoAction(this));
+    actions.push_back(mUndoStack.createRedoAction(this));
+    mUi->menuEdit->insertActions(mUi->actionDelete, actions);
 
     QGraphicsView* graphicsView = new QGraphicsView(this);
     graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -131,3 +153,97 @@ void FsmEditor::on_actionDelete_triggered()
 {
     mScene->DeleteSelection();
 }
+
+void FsmEditor::on_actionExit_triggered()
+{
+    close();
+}
+
+static bool ContinueOnUnsavedChanges(QWidget* pParent)
+{
+    const auto ret = QMessageBox::question(pParent, "Fsm editor", "There are unsaved changes, continue?", // TODO tr("")
+                     QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes,
+                     QMessageBox::Yes);
+    return ret == QMessageBox::Yes;
+}
+
+void FsmEditor::on_actionOpen_triggered()
+{
+    bool doOpen = true;
+    if (!mUndoStack.isClean())
+    {
+        doOpen = ContinueOnUnsavedChanges(this);
+    }
+
+    if (doOpen)
+    {
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Open FSM"), "", tr("FSM Files (*.fsm)"));
+        if (fileName.isEmpty())
+        {
+            if (mScene->Open(fileName))
+            {
+                mFileName = fileName;
+                mUi->statusBar->showMessage(tr("Loaded") + mFileName);
+            }
+        }
+    }
+}
+
+void FsmEditor::on_actionSave_As_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save FSM"), "", tr("FSM Files (*.fsm)"));
+    if (!fileName.isEmpty())
+    {
+        mFileName = fileName;
+        on_actionSave_triggered();
+    }
+}
+
+void FsmEditor::on_actionSave_triggered()
+{
+    if (mFileName.isEmpty())
+    {
+        on_actionSave_As_triggered();
+        return;
+    }
+
+    if (mScene->Save(mFileName))
+    {
+        mUi->statusBar->showMessage(tr("Saved ") + mFileName);
+    }
+}
+
+void FsmEditor::on_actionNew_triggered()
+{
+    bool clearDown = true;
+    if (!mUndoStack.isClean())
+    {
+        clearDown = ContinueOnUnsavedChanges(this);
+    }
+
+    if (clearDown)
+    {
+        mUndoStack.clear();
+        mScene->clear();
+        mFileName = "";
+    }
+}
+
+void FsmEditor::closeEvent(QCloseEvent* event)
+{
+    if (mUndoStack.isClean())
+    {
+        event->accept();
+        return;
+    }
+
+    if (ContinueOnUnsavedChanges(this))
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
