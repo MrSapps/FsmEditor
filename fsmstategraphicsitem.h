@@ -51,9 +51,17 @@ public:
         return true;
     }
 
+    void Save(QDataStream& out);
+    void Load(QDataStream& in);
+
+    static void SaveStaticData(QDataStream& out);
+    static void LoadStaticData(QDataStream& in);
+
+    quint32 Id() const { return mId; }
 private:
     QRect mRect;
     QString mName;
+    quint32 mId = 0;
     static unsigned int mInstaceCounter;
 };
 

@@ -17,6 +17,7 @@ FsmStateGraphicsItem::FsmStateGraphicsItem(QGraphicsItem *pParent)
     mRect.setHeight(kRectSize);
 
     mInstaceCounter++;
+    mId = mInstaceCounter;
     mName = "New state(" + QString::number(mInstaceCounter) + ")";
 }
 
@@ -49,4 +50,39 @@ void FsmStateGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
 
     QTextOption textOption(Qt::AlignCenter);
     painter->drawText(mRect, mName, textOption);
+}
+
+void FsmStateGraphicsItem::Save(QDataStream& out)
+{
+    out << mName;
+    out << mRect;
+    out << mId;
+    out << scenePos();
+    out << isSelected();
+}
+
+void FsmStateGraphicsItem::Load(QDataStream& in)
+{
+    in >> mName;
+    in >> mRect;
+    in >> mId;
+
+    QPointF loadedScenePos;
+    in >> loadedScenePos;
+
+    bool loadedIsSelected = false;
+    in >> loadedIsSelected;
+
+    setPos(mapFromScene(loadedScenePos));
+    setSelected(loadedIsSelected);
+}
+
+void FsmStateGraphicsItem::SaveStaticData(QDataStream& out)
+{
+    out << (quint32)mInstaceCounter;
+}
+
+void FsmStateGraphicsItem::LoadStaticData(QDataStream& in)
+{
+    in >> mInstaceCounter;
 }

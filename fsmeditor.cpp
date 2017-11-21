@@ -178,12 +178,12 @@ void FsmEditor::on_actionOpen_triggered()
     if (doOpen)
     {
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open FSM"), "", tr("FSM Files (*.fsm)"));
-        if (fileName.isEmpty())
+        if (!fileName.isEmpty())
         {
             if (mScene->Open(fileName))
             {
                 mFileName = fileName;
-                mUi->statusBar->showMessage(tr("Loaded") + mFileName);
+                mUi->statusBar->showMessage(tr("Loaded ") + mFileName);
             }
         }
     }

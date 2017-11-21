@@ -5,6 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include "fsmconnectiongraphicsitem.h"
 #include <QDebug>
+#include <QFile>
 
 class AddStateCommand : public QUndoCommand
 {
@@ -156,13 +157,15 @@ void FsmGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* pMouseEvent)
     QGraphicsScene::mouseMoveEvent(pMouseEvent);
 }
 
-static FsmStateGraphicsItem* GetDestinationState(FsmConnectionGraphicsItem* pConnection)
+static FsmStateGraphicsItem* GetDestinationState(FsmConnectionGraphicsItem* pConnection, quint32* count = nullptr)
 {
     while (!pConnection->DestinationItem()->IsTerminal())
     {
         pConnection = (*pConnection->DestinationItem()->OutConnections().begin());
+        count++;
     }
 
+    count++;
     return qgraphicsitem_cast<FsmStateGraphicsItem*>(pConnection->DestinationItem()->AsGraphicsItem());
 }
 
@@ -365,16 +368,125 @@ void FsmGraphicsScene::DeleteSelection()
     }
 }
 
+const uint32_t kFileMagic = 0x5061756c;
+const uint32_t kVersion = 0x1;
+
 bool FsmGraphicsScene::Open(QString fileName)
 {
-    // TODO
-    return false;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        // TODO: Error message
+        return false;
+    }
+
+    QDataStream in(&file);
+
+    // Magic
+    quint32 magic = 0;
+    in >> magic;
+    if (magic != kFileMagic)
+    {
+        // TODO
+        return false;
+    }
+
+    // Format version
+    qint32 version = 0;
+    in >> version;
+    if (version < kVersion)
+    {
+        // TODO
+        return false;
+    }
+    else if (version > kVersion)
+    {
+        // TODO
+        return false;
+    }
+
+    quint32 numStates = 0;
+    in >> numStates;
+
+    for (quint32 i=0; i<numStates; i++)
+    {
+        FsmStateGraphicsItem* pState = new FsmStateGraphicsItem();
+        addItem(pState);
+        pState->Load(in);
+    }
+
+    // Restore instance counter
+    FsmStateGraphicsItem::LoadStaticData(in);
+
+    quint32 numConnections = 0;
+    in >> numConnections;
+
+    for (quint32 i=0; i<numConnections; i++)
+    {
+        quint32 numConnectionParts = 0;
+        in >> numConnectionParts;
+        for (quint32 j=0; j<numConnectionParts; j++)
+        {
+            // TODO
+
+        }
+    }
+
+    return true;
 }
+
 
 bool FsmGraphicsScene::Save(QString fileName)
 {
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        // TODO: Error message
+        return false;
+    }
+
+    QDataStream out(&file);
+
+    // Magic
+    out << (quint32)kFileMagic;
+
+    // Format version
+    out << (qint32)0x1;
+
+    // Qt backwards/forwards compat version
+    out.setVersion(QDataStream::Qt_5_9);
+
+    QList<QGraphicsItem*> allItems = items();
+
+    // Save the states
+    QSet<FsmStateGraphicsItem*> states = GetItemsOfType<FsmStateGraphicsItem>(allItems);
+    out << (quint32)states.size();
+    foreach(FsmStateGraphicsItem* pState, states)
+    {
+        pState->Save(out);
+    }
+
+    // Save instance counter
+    FsmStateGraphicsItem::SaveStaticData(out);
+
+    // Save the connections of each state
+    QSet<FsmConnectionGraphicsItem*> connections;
+    foreach(FsmStateGraphicsItem* pState, states)
+    {
+        connections += pState->OutConnections();
+    }
+
+    out << (quint32)connections.size();
+    foreach(FsmConnectionGraphicsItem* pConnection, connections)
+    {
+        quint32 count = 0;
+        GetDestinationState(pConnection, &count);
+
+        // TODO
+    }
+
     // TODO
-    return false;
+    return true;
 }
 
 /*
