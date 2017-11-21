@@ -157,15 +157,12 @@ void FsmGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* pMouseEvent)
     QGraphicsScene::mouseMoveEvent(pMouseEvent);
 }
 
-static FsmStateGraphicsItem* GetDestinationState(FsmConnectionGraphicsItem* pConnection, quint32* count = nullptr)
+static FsmStateGraphicsItem* GetDestinationState(FsmConnectionGraphicsItem* pConnection)
 {
     while (!pConnection->DestinationItem()->IsTerminal())
     {
         pConnection = (*pConnection->DestinationItem()->OutConnections().begin());
-        count++;
     }
-
-    count++;
     return qgraphicsitem_cast<FsmStateGraphicsItem*>(pConnection->DestinationItem()->AsGraphicsItem());
 }
 
@@ -371,6 +368,19 @@ void FsmGraphicsScene::DeleteSelection()
 const uint32_t kFileMagic = 0x5061756c;
 const uint32_t kVersion = 0x1;
 
+FsmStateGraphicsItem* FsmGraphicsScene::StateGraphicsItemById(quint32 id)
+{
+    auto states = GetItemsOfType<FsmStateGraphicsItem>(items());
+    foreach(auto pState, states)
+    {
+        if (pState->Id() == id)
+        {
+            return pState;
+        }
+    }
+    return nullptr;
+}
+
 bool FsmGraphicsScene::Open(QString fileName)
 {
     QFile file(fileName);
@@ -425,10 +435,61 @@ bool FsmGraphicsScene::Open(QString fileName)
     {
         quint32 numConnectionParts = 0;
         in >> numConnectionParts;
+
+        FsmConnectionGraphicsItem* pLastConnection = nullptr;
+        FsmConnectionSplitter* pLastSplitter = nullptr;
         for (quint32 j=0; j<numConnectionParts; j++)
         {
-            // TODO
+            quint32 partType = 0;
+            in >> partType;
 
+            if (partType == FsmConnectionGraphicsItem::Type)
+            {
+                pLastConnection = new FsmConnectionGraphicsItem();
+                addItem(pLastConnection);
+                pLastConnection->Load(in);
+                if (pLastSplitter)
+                {
+                    pLastConnection->SetSourceItem(pLastSplitter);
+                    pLastSplitter->OutConnections().insert(pLastConnection);
+                }
+                else
+                {
+                    quint32 sourceItemId = 0;
+                    in >> sourceItemId;
+                    auto pState = StateGraphicsItemById(sourceItemId);
+                    pLastConnection->SetSourceItem(pState);
+                    pState->OutConnections().insert(pLastConnection);
+                }
+            }
+            else if (partType == FsmConnectionSplitter::Type)
+            {
+                pLastSplitter = new FsmConnectionSplitter();
+                addItem(pLastSplitter);
+                pLastSplitter->Load(in);
+
+                pLastSplitter->InConnections().insert(pLastConnection);
+                pLastConnection->SetDestinationItem(pLastSplitter);
+            }
+            else
+            {
+                // error
+                return false;
+            }
+        }
+
+        bool isSegmentSelected = false;
+        in >> isSegmentSelected;
+        if (pLastConnection)
+        {
+            pLastConnection->setSelected(isSegmentSelected);
+
+            quint32 destinationItemId = 0;
+            in >> destinationItemId;
+
+            auto pState = StateGraphicsItemById(destinationItemId);
+            pLastConnection->SetDestinationItem(pState);
+            pState->InConnections().insert(pLastConnection);
         }
     }
 
@@ -479,10 +540,27 @@ bool FsmGraphicsScene::Save(QString fileName)
     out << (quint32)connections.size();
     foreach(FsmConnectionGraphicsItem* pConnection, connections)
     {
-        quint32 count = 0;
-        GetDestinationState(pConnection, &count);
+        FsmConnectionGraphicsItem* pIter = pConnection;
+        int count = 1;
+        while (!pIter->DestinationItem()->IsTerminal())
+        {
+            pIter->DestinationItem()->Save(out);
+            pIter = (*pIter->DestinationItem()->OutConnections().begin());
+            count++;
+        }
 
-        // TODO
+        out << (quint32)count;
+
+        pIter = pConnection;
+        pIter->Save(out);
+        while (!pIter->DestinationItem()->IsTerminal())
+        {
+            pIter->DestinationItem()->Save(out);
+            pIter = (*pConnection->DestinationItem()->OutConnections().begin());
+            pIter->Save(out);
+        }
+
+        out << pConnection->isSelected();
     }
 
     // TODO

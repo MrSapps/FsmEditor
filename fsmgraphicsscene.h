@@ -5,6 +5,7 @@
 #include <QUndoStack>
 
 class FsmConnectionGraphicsItem;
+class FsmStateGraphicsItem;
 
 class FsmGraphicsScene : public QGraphicsScene
 {
@@ -28,6 +29,8 @@ public:
     //void SelectionChanged();
 
 private:
+    FsmStateGraphicsItem* StateGraphicsItemById(quint32 id);
+
     void DeleteAllSegments(FsmConnectionGraphicsItem* connection);
     static FsmConnectionGraphicsItem* GetStartingSegment(FsmConnectionGraphicsItem* pArbitarySegment);
 

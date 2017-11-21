@@ -37,6 +37,13 @@ public:
         return false;
     }
 
+    virtual void Save(QDataStream& out) override
+    {
+        out << (quint32)Type;
+    }
+
+    void Load(QDataStream&) { }
+
 private:
     int mRadius = 30;
 };
@@ -63,6 +70,8 @@ public:
     void SetSourceItem(IConnectableItem* item) { mSourceItem = item; }
     void SetDestinationItem(IConnectableItem* item) { mDestinationItem = item; }
 
+    void Save(QDataStream& out);
+    void Load(QDataStream& in);
 private:
     IConnectableItem* mSourceItem = nullptr;
     IConnectableItem* mDestinationItem = nullptr;

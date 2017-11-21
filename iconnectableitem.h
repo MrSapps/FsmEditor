@@ -15,7 +15,7 @@ public:
 
     virtual QGraphicsItem* AsGraphicsItem() = 0;
     virtual bool IsTerminal() const = 0;
-
+    virtual void Save(QDataStream& out) = 0;
     void HandleItemChange(QGraphicsItem::GraphicsItemChange change);
 private:
     QSet<FsmConnectionGraphicsItem*> mInConnections;

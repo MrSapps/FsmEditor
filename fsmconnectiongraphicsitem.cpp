@@ -136,6 +136,35 @@ void FsmConnectionGraphicsItem::EnableArrowHead(bool enable)
     mEnableArrowHead = enable;
 }
 
+void FsmConnectionGraphicsItem::Save(QDataStream& out)
+{
+    out << (quint32)Type;
+    out << scenePos();
+    out << line();
+
+    if (mDestinationItem->IsTerminal())
+    {
+        out << (quint32)qgraphicsitem_cast<FsmStateGraphicsItem*>(mDestinationItem->AsGraphicsItem())->Id();
+    }
+
+    if (mSourceItem->IsTerminal())
+    {
+        out << (quint32)qgraphicsitem_cast<FsmStateGraphicsItem*>(mSourceItem->AsGraphicsItem())->Id();
+    }
+}
+
+void FsmConnectionGraphicsItem::Load(QDataStream& in)
+{
+    QPointF pos;
+    in >> pos;
+
+    setPos(mapFromScene(pos));
+
+    QLineF line;
+    in >> line;
+    setLine(line);
+}
+
 // TODO FIX ME
 static QSet<FsmConnectionGraphicsItem*> IterateSegments(FsmConnectionGraphicsItem* pSource)
 {
