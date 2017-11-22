@@ -8,6 +8,23 @@
 FsmStateGraphicsItem::FsmStateGraphicsItem(QGraphicsItem *pParent)
     : QGraphicsItem(pParent)
 {
+    Init();
+
+    mInstaceCounter++;
+    mId = mInstaceCounter;
+    mName = "New state(" + QString::number(mInstaceCounter) + ")";
+}
+
+FsmStateGraphicsItem::FsmStateGraphicsItem(QString name, quint32 id, QGraphicsItem* pParent)
+    : QGraphicsItem(pParent)
+{
+    Init();
+    mId = id;
+    mName = name;
+}
+
+void FsmStateGraphicsItem::Init()
+{
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
@@ -17,9 +34,6 @@ FsmStateGraphicsItem::FsmStateGraphicsItem(QGraphicsItem *pParent)
     mRect.setWidth(kRectSize);
     mRect.setHeight(kRectSize);
 
-    mInstaceCounter++;
-    mId = mInstaceCounter;
-    mName = "New state(" + QString::number(mInstaceCounter) + ")";
 }
 
 int FsmStateGraphicsItem::type() const

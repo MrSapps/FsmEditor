@@ -14,6 +14,7 @@ class FsmStateGraphicsItem : public IConnectableItem, public QGraphicsItem
 {
 public:
     FsmStateGraphicsItem(QGraphicsItem* pParent = nullptr);
+    FsmStateGraphicsItem(QString name, quint32 id, QGraphicsItem* pParent = nullptr);
 
     enum
     {
@@ -59,6 +60,8 @@ public:
 
     quint32 Id() const { return mId; }
 private:
+    void Init();
+
     QRect mRect;
     QString mName;
     quint32 mId = 0;

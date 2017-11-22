@@ -27,10 +27,11 @@ void LineEditProperty::Commit()
 {
     if (mWidget)
     {
-        emit OnCommit(mWidget->text());
         setText(Columns::eValue, mWidget->text());
+        emit OnCommit(mWidget->text());
     }
-    treeWidget()->setItemWidget(this, Columns::eValue, nullptr);
+    // HACK: All of this gets re-created
+    //treeWidget()->setItemWidget(this, Columns::eValue, nullptr);
 }
 
 void LineEditProperty::QLineEditWidgetDeleted(QObject*)

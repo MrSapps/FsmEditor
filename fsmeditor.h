@@ -21,6 +21,7 @@ class FsmStatePropertyEditor : public QObject
 public:
     FsmStatePropertyEditor(PropertyTreeWidget* widget, QObject* parent = nullptr);
     void SetSelection(FsmStateGraphicsItem* selection);
+    void StateObjectUpdated(FsmStateGraphicsItem* selection);
 private slots:
     void OnCommitTextProperty(QString text);
 private:

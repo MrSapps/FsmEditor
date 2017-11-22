@@ -67,10 +67,50 @@ void FsmStatePropertyEditor::SetSelection(FsmStateGraphicsItem* selection)
     }
 }
 
+void FsmStatePropertyEditor::StateObjectUpdated(FsmStateGraphicsItem* selection)
+{
+    // hack, just reload everything
+    mSelected = nullptr;
+    SetSelection(selection);
+}
+
+class SetStateNameCommand : public QUndoCommand
+{
+public:
+    SetStateNameCommand(FsmStatePropertyEditor* pPe, FsmGraphicsScene* pScene, quint32 id, QString newText, QString oldText)
+     : mPe(pPe), mScene(pScene), mId(id), mNewName(newText), mOldName(oldText)
+    {
+        setText("Rename state " + oldText + " to " + newText);
+    }
+
+    virtual void undo() override
+    {
+        auto pState = mScene->StateGraphicsItemById(mId);
+        pState->SetName(mOldName);
+        mScene->invalidate();
+        mPe->StateObjectUpdated(pState);
+    }
+
+    virtual void redo() override
+    {
+        auto pState = mScene->StateGraphicsItemById(mId);
+        pState->SetName(mNewName);
+        mScene->invalidate();
+        mPe->StateObjectUpdated(pState);
+    }
+
+private:
+    FsmStatePropertyEditor* mPe = nullptr;
+    FsmGraphicsScene* mScene = nullptr;
+    quint32 mId = 0;
+    QString mNewName;
+    QString mOldName;
+};
+
 void FsmStatePropertyEditor::OnCommitTextProperty(QString text)
 {
-    mSelected->SetName(text);
-    mSelected->scene()->invalidate();
+    FsmGraphicsScene* pScene = static_cast<FsmGraphicsScene*>(mSelected->scene());
+    pScene->GetUndoStack().push(new SetStateNameCommand(this, pScene, mSelected->Id(), text, mSelected->Name()));
 }
 
 FsmEditor::FsmEditor(QWidget* parent)

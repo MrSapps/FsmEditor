@@ -6,6 +6,7 @@
 #include "fsmconnectiongraphicsitem.h"
 #include <QDebug>
 #include <QFile>
+#include <memory>
 
 class AddStateCommand : public QUndoCommand
 {
@@ -13,7 +14,10 @@ public:
     AddStateCommand(QGraphicsScene* pScene, QPointF createPos)
      : mScene(pScene), mCreatePos(createPos)
     {
-        QString message = "Create new state item at " + QString::number(createPos.x()) + "," + QString::number(createPos.y());
+        std::unique_ptr<FsmStateGraphicsItem> tempItem = std::make_unique<FsmStateGraphicsItem>();
+        mName = tempItem->Name();
+        mId = tempItem->Id();
+        QString message = "Create state " + mName + " at " + QString::number(createPos.x()) + "," + QString::number(createPos.y());
         setText(message);
     }
 
@@ -30,7 +34,10 @@ private:
 
     virtual void redo() override
     {
-        mCreatedItem = new FsmStateGraphicsItem();
+        if (!mCreatedItem)
+        {
+            mCreatedItem = new FsmStateGraphicsItem(mName, mId);
+        }
         mCreatedItem->setPos(mCreatePos);
         mScene->addItem(mCreatedItem);
     }
@@ -38,6 +45,8 @@ private:
     FsmStateGraphicsItem* mCreatedItem = nullptr;
     QGraphicsScene* mScene;
     QPointF mCreatePos;
+    QString mName;
+    quint32 mId = 0;
 };
 
 class SelectionChangedCommand : public QUndoCommand

@@ -28,8 +28,10 @@ public:
 //public slots:
     //void SelectionChanged();
 
-private:
+    QUndoStack& GetUndoStack() { return mUndoStack; }
     FsmStateGraphicsItem* StateGraphicsItemById(quint32 id);
+
+private:
 
     void DeleteAllSegments(FsmConnectionGraphicsItem* connection);
     static FsmConnectionGraphicsItem* GetStartingSegment(FsmConnectionGraphicsItem* pArbitarySegment);
