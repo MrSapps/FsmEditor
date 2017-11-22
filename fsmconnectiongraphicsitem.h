@@ -3,7 +3,7 @@
 
 #include <QGraphicsLineItem>
 #include <QPolygonF>
-
+#include <QDebug>
 #include "iconnectableitem.h"
 
 class FsmStateGraphicsItem;
@@ -19,7 +19,7 @@ public:
 
     enum
     {
-        Type = UserType + 2
+        Type = UserType + 3
     };
 
     virtual int type() const override
@@ -39,10 +39,17 @@ public:
 
     virtual void Save(QDataStream& out) override
     {
+        qDebug() << "Write splitter";
         out << (quint32)Type;
+        out << scenePos();
     }
 
-    void Load(QDataStream&) { }
+    void Load(QDataStream& in)
+    {
+        QPointF pos;
+        in >> pos;
+        setPos(mapFromScene(pos));
+    }
 
 private:
     int mRadius = 30;
@@ -54,6 +61,12 @@ public:
     FsmConnectionGraphicsItem(IConnectableItem* sourceItem, IConnectableItem* destinationItem, QGraphicsItem* parent = nullptr);
     FsmConnectionGraphicsItem(QGraphicsItem* parent = nullptr);
     ~FsmConnectionGraphicsItem();
+
+    enum
+    {
+        Type = UserType + 1
+    };
+    virtual int type() const override { return Type; }
 
     virtual QRectF boundingRect() const override;
     virtual QPainterPath shape() const override;

@@ -1,5 +1,6 @@
 #include "fsmstategraphicsitem.h"
 #include <QPainter>
+#include <QDebug>
 #include "fsmconnectiongraphicsitem.h"
 
 /*static*/ unsigned int FsmStateGraphicsItem::mInstaceCounter;
@@ -54,6 +55,7 @@ void FsmStateGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIt
 
 void FsmStateGraphicsItem::Save(QDataStream& out)
 {
+    qDebug() << "Write state";
     out << mName;
     out << mRect;
     out << mId;

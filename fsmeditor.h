@@ -54,6 +54,7 @@ private slots:
 
 private:
     virtual void closeEvent(QCloseEvent* event) override;
+    void DoClean();
 private:
     Ui::FsmEditor* mUi;
     QUndoStack mUndoStack;

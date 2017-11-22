@@ -180,6 +180,7 @@ void FsmEditor::on_actionOpen_triggered()
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open FSM"), "", tr("FSM Files (*.fsm)"));
         if (!fileName.isEmpty())
         {
+            DoClean();
             if (mScene->Open(fileName))
             {
                 mFileName = fileName;
@@ -223,10 +224,15 @@ void FsmEditor::on_actionNew_triggered()
 
     if (clearDown)
     {
-        mUndoStack.clear();
-        mScene->clear();
-        mFileName = "";
+        DoClean();
     }
+}
+
+void FsmEditor::DoClean()
+{
+    mUndoStack.clear();
+    mScene->clear();
+    mFileName = "";
 }
 
 void FsmEditor::closeEvent(QCloseEvent* event)

@@ -50,7 +50,7 @@ QPainterPath FsmConnectionGraphicsItem::shape() const
 
 void FsmConnectionGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* /*option*/, QWidget* /*widget*/)
 {
-    if (mSourceItem && mSourceItem->AsGraphicsItem()->collidesWithItem(mDestinationItem->AsGraphicsItem()))
+    if (mSourceItem && mDestinationItem && mSourceItem->AsGraphicsItem()->collidesWithItem(mDestinationItem->AsGraphicsItem()))
     {
         return;
     }
@@ -138,9 +138,14 @@ void FsmConnectionGraphicsItem::EnableArrowHead(bool enable)
 
 void FsmConnectionGraphicsItem::Save(QDataStream& out)
 {
+    qDebug() << "Write connection";
+
     out << (quint32)Type;
     out << scenePos();
     out << line();
+
+    out << mDestinationItem->IsTerminal();
+    out << mSourceItem->IsTerminal();
 
     if (mDestinationItem->IsTerminal())
     {

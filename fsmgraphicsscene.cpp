@@ -438,6 +438,9 @@ bool FsmGraphicsScene::Open(QString fileName)
 
         FsmConnectionGraphicsItem* pLastConnection = nullptr;
         FsmConnectionSplitter* pLastSplitter = nullptr;
+        quint32 sourceItemId = 0;
+        quint32 destinationItemId = 0;
+
         for (quint32 j=0; j<numConnectionParts; j++)
         {
             quint32 partType = 0;
@@ -448,6 +451,24 @@ bool FsmGraphicsScene::Open(QString fileName)
                 pLastConnection = new FsmConnectionGraphicsItem();
                 addItem(pLastConnection);
                 pLastConnection->Load(in);
+
+                bool destinationIsTerminal = false;
+                bool sourceIsTerminal = false;
+
+                in >> destinationIsTerminal;
+                in >> sourceIsTerminal;
+
+                if (destinationIsTerminal)
+                {
+                    in >> destinationItemId;
+                }
+
+                if (sourceIsTerminal)
+                {
+                    in >> sourceItemId;
+                }
+
+
                 if (pLastSplitter)
                 {
                     pLastConnection->SetSourceItem(pLastSplitter);
@@ -455,9 +476,9 @@ bool FsmGraphicsScene::Open(QString fileName)
                 }
                 else
                 {
-                    quint32 sourceItemId = 0;
-                    in >> sourceItemId;
                     auto pState = StateGraphicsItemById(sourceItemId);
+                    Q_ASSERT(pState);
+
                     pLastConnection->SetSourceItem(pState);
                     pState->OutConnections().insert(pLastConnection);
                 }
@@ -482,14 +503,13 @@ bool FsmGraphicsScene::Open(QString fileName)
         in >> isSegmentSelected;
         if (pLastConnection)
         {
-            pLastConnection->setSelected(isSegmentSelected);
-
-            quint32 destinationItemId = 0;
-            in >> destinationItemId;
-
             auto pState = StateGraphicsItemById(destinationItemId);
+            Q_ASSERT(pState);
             pLastConnection->SetDestinationItem(pState);
             pState->InConnections().insert(pLastConnection);
+            pLastConnection->EnableArrowHead(true);
+            pLastConnection->SyncPosition();
+            pLastConnection->setSelected(isSegmentSelected);
         }
     }
 
@@ -544,11 +564,12 @@ bool FsmGraphicsScene::Save(QString fileName)
         int count = 1;
         while (!pIter->DestinationItem()->IsTerminal())
         {
-            pIter->DestinationItem()->Save(out);
             pIter = (*pIter->DestinationItem()->OutConnections().begin());
-            count++;
+            count++; // Connection
+            count++; // Line segment
         }
 
+        qDebug() << "PARTS COUNT" << count;
         out << (quint32)count;
 
         pIter = pConnection;
@@ -556,7 +577,7 @@ bool FsmGraphicsScene::Save(QString fileName)
         while (!pIter->DestinationItem()->IsTerminal())
         {
             pIter->DestinationItem()->Save(out);
-            pIter = (*pConnection->DestinationItem()->OutConnections().begin());
+            pIter = (*pIter->DestinationItem()->OutConnections().begin());
             pIter->Save(out);
         }
 
